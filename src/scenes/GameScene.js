@@ -5,10 +5,19 @@ export default class GameScene extends Phaser.Scene {
     super('Game');
   }
 
-  preload() {
+  init() {
   }
 
   create() {
-    const logo = this.add.image(400, 150, "logo");
+    this.createMap();
+  }
+
+  createMap() {
+    // create our map
+    this.bgMap = this.make.tilemap({ key: 'level1' });
+    // add tileset image
+    this.tiles = this.bgMap.addTilesetImage('terrainTiles_default');
+    // create background layer
+    this.backgroundLayer = this.bgMap.createStaticLayer('Background', this.tiles, 0, 0);
   }
 }

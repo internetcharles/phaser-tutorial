@@ -5,7 +5,36 @@ export default class PreloaderScene extends Phaser.Scene {
     super('Preloader');
   }
 
+  init() {
+    this.readyCount = 0;
+  }
+
   preload() {
+    this.timedEvent = this.time.delayedCall(1, this.ready, [], this);
+    this.createPreloader();
+    this.loadAssets();
+  }
+
+  loadAssets() {
+    // load assets needed in our game
+    this.load.image('bullet', 'assets/level/bulletDark2_outline.png');
+    this.load.image('tower', 'assets/level/tank_bigRed.png');
+    this.load.image('enemy', 'assets/level/tank_sand.png');
+    this.load.image('base', 'assets/level/tankBody_darkLarge_outline.png');
+    this.load.image('title', 'assets/ui/title.png');
+    this.load.image('cursor', 'assets/ui/cursor.png');
+    this.load.image('blueButton1', 'assets/ui/blue_button02.png');
+    this.load.image('blueButton2', 'assets/ui/blue_button03.png');
+
+    // placeholder
+    this.load.image('logo2', 'assets/logo.png');
+
+    // tile map in JSON format
+    this.load.tilemapTiledJSON('level1', 'assets/level/level1.json');
+    this.load.spritesheet('terrainTiles_default', 'assets/logo/terrainTiles_default.png', { frameWidth: 64, frameHeight: 64 })
+  }
+
+  createPreloader() {
     var width = this.cameras.main.width;
     var height = this.cameras.main.height;
 
@@ -56,28 +85,37 @@ export default class PreloaderScene extends Phaser.Scene {
 
     // update progress bar
     this.load.on('progress', function (value) {
-      console.log(value)
-    })
+      percentText.setText(parseInt(value * 100) + '%');
+      progressBar.clear();
+      progressBox.fillStyle(0xffffff, 1);
+      progressBox.fillRect(width / 2 - 150, height / 2 - 20, 300 * value, 30);
+    });
 
-    // load assets needed in our game
-    this.load.image('bullet', 'assets/level/bulletDark2_outline.png');
-    this.load.image('tower', 'assets/level/tank_bigRed.png');
-    this.load.image('enemy', 'assets/level/tank_sand.png');
-    this.load.image('base', 'assets/level/tankBody_darkLarge_outline.png');
-    this.load.image('title', 'assets/ui/title.png');
-    this.load.image('cursor', 'assets/ui/cursor.png');
-    this.load.image('blueButton1', 'assets/ui/blue_button02.png');
-    this.load.image('blueButton2', 'assets/ui/blue_button03.png');
+    // update file progress text
+    this.load.on('fileprogress', function (file) {
+      assetText.setText('Loading asset: ' + file.key);
+    });
 
-    // placeholder
-    this.load.image('logo2', 'assets/logo.png');
+    // remove progress bar when complete
+    this.load.on('complete', function () {
+      progressBox.destroy();
+      progressBar.destroy();
+      assetText.destroy();
+      loadingText.destroy();
+      percentText.destroy();
+      this.ready();
+    }.bind(this));
 
-    // tile map in JSON format
-    this.load.tilemapTiledJSON('level1', 'assets/level/level1.json');
-    this.load.spritesheet('terrainTiles_default', 'assets/logo/terrainTiles_default.png', { frameWidth: 64, frameHeight: 64 })
+    // time event for logo
+    // TODO: update delayed call
   }
 
-  create() {
-    this.scene.start('Game');
+  ready() {
+    this.readyCount++;
+    if(this.readyCount === 2) {
+      // TODO: switch to title screen
+      this.scene.start('Game');
+    }
   }
+
 }
